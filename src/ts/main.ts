@@ -7,11 +7,20 @@ class APP{
 	private scene: MainScene;
 
 	constructor(){
+		
 		this.canvas = document.querySelector("#canvas");
-        this.controller = new ORE.Controller(this.canvas,false);
-        this.scene = new MainScene(this.controller.renderer);
-        this.controller.setScene(this.scene);
+
+		this.controller = new ORE.Controller({
+
+			canvas: this.canvas,
+			retina: true,
+
+		})
+
+		this.controller.setScene(MainScene);
+
 	}
+
 }
 
 window.addEventListener('load',()=>{
