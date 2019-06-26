@@ -2,16 +2,25 @@ import * as ORE from 'ore-three-ts'
 import * as THREE from 'three';
 
 export default class MainScene extends ORE.BaseScene{
+
+	private renderer: THREE.WebGLRenderer;
 	private box: THREE.Mesh;
 	private light: THREE.Light;
 
-	constructor(renderer){
-		super(renderer);
+	constructor(){
+
+		super();
+
 		this.name = "MainScene";
-		this.init();
+	
 	}
 
-	init(){
+	onBind( gPorps: ORE.GlobalProperties ){
+
+		super.onBind( gPorps );
+
+		this.renderer = this.gProps.renderer;
+		
 		this.camera.position.set(0,1.5,3);
         this.camera.lookAt(0,0,0);
 

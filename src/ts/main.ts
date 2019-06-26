@@ -17,7 +17,7 @@ class APP{
 
 		})
 
-		this.controller.setScene(MainScene);
+		this.controller.bindScene( new MainScene() );
 
 	}
 
