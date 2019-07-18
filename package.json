@@ -28,7 +28,8 @@
     "webpack-stream": "^5.2.1"
   },
   "dependencies": {
-    "ore-three-ts": "^0.3.0",
-    "three": "^0.105.0"
+    "ore-three-ts": "^0.3.2",
+    "three": "^0.106.0",
+    "three-gltf-loader": "^1.106.0"
   }
 }
