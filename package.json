@@ -1,14 +1,14 @@
 {
-  "name": "three-template-ts",
+  "name": "",
   "version": "0.0.1",
-  "description": "tdu congestion",
+  "description": "",
   "repository": {
     "type": "git",
-    "url": "git@github.com:ukonpower/three-template-ts.git"
+    "url": ""
   },
   "author": "ukonpower",
   "bugs": {
-    "url": "https://github.com/ukonpower/three-template-ts/issues"
+    "url": ""
   },
   "license": "MIT",
   "devDependencies": {
