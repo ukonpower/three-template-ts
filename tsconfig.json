@@ -12,5 +12,5 @@
     "rootDir": "./src/ts",
     "outDir": "./public",
   },
-  "include": ["./src/ts"]
+  "include": ["./src/"]
 }
