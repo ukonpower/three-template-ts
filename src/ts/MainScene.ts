@@ -39,11 +39,11 @@ export default class MainScene extends ORE.BaseScene{
 
 	}
 
-	public animate(){
+	public animate( deltaTime: number ){
 
         this.box.rotateY(0.01);
 		
-		this.renderer.render(this.scene,this.camera);
+		this.renderer.render( this.scene, this.camera );
 	
 	}
 
