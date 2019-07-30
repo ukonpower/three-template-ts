@@ -15,9 +15,9 @@ export default class MainScene extends ORE.BaseScene{
 	
 	}
 
-	onBind( gPorps: ORE.GlobalProperties ){
+	onBind( gProps: ORE.GlobalProperties ){
 
-		super.onBind( gPorps );
+		super.onBind( gProps );
 
 		this.renderer = this.gProps.renderer;
 		
