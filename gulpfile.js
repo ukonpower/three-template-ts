@@ -63,10 +63,7 @@ gulp.task('reload',function(){
 })
 
 gulp.task('clean', function(c){
-    del([
-        './public/',
-    ]);
-    c();
+    del([ './public/' ], c() );
 });
 
 gulp.task('watch',function(){
