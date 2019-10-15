@@ -35,41 +35,18 @@ export default class MainScene extends ORE.BaseScene{
 
 	}
 
-	public onUnbind( ){
-
-	}
-
 	public animate( deltaTime: number ){
 
-        this.box.rotateY(0.01);
+        this.box.rotateY( 0.01 );
 		
 		this.renderer.render( this.scene, this.camera );
 	
 	}
 
-	public onResize(width, height) {
+	public onResize( args: ORE.ResizeArgs ) {
 		
-		super.onResize(width,height);
+		super.onResize( args );
 	
 	}
 
-    public onTouchStart( cursor: ORE.Cursor, event: MouseEvent ) {
-
-	}
-
-    public onTouchMove( cursor: ORE.Cursor, event: MouseEvent ) {
-
-	}
-
-    public onTouchEnd( cursor: ORE.Cursor, event: MouseEvent ) {
-
-	}
-
-	public onHover( cursor: ORE.Cursor ){
-
-	}
-
-	public onWheel( event: WheelEvent ){
-
-	}
 }
