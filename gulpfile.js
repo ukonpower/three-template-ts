@@ -45,6 +45,7 @@ gulp.task("sass",function(c){
 gulp.task('copy', function(c){
     gulp.src(['./src/html/**/*']).pipe(gulp.dest('./public/'));
     gulp.src(['./src/assets/**/*']).pipe(gulp.dest('./public/assets/'));
+    browserSync.reload();
     c();
 });
 
