@@ -1,4 +1,5 @@
 const gulp = require( 'gulp' );
+const gulpIf = require( 'gulp-if' );
 const webpackStream = require( 'webpack-stream' );
 const webpack = require( 'webpack' );
 const webpackConfig = require( './webpack.config.js' );
@@ -8,6 +9,7 @@ const plumber = require( 'gulp-plumber' );
 const sass = require( 'gulp-sass' );
 const cssmin = require( 'gulp-cssmin' );
 const del = require( 'del' );
+const eslint = require( 'gulp-eslint' );
 const minimist = require( 'minimist' );
 
 const options = minimist( process.argv.slice( 2 ), {
@@ -18,7 +20,31 @@ const options = minimist( process.argv.slice( 2 ), {
 	
 } );
 
-gulp.task( "webpack",function(){
+function isFixed( file ) {
+
+	return file.eslint != null && file.eslint.fixed;
+
+}
+
+function lint( cb ) {
+
+	let paths = [ './src/', './examples/' ];
+
+	for ( let i = 0; i < paths.length; i ++ ) {
+
+		gulp.src( paths[ i ] + '**/*.ts' )
+			.pipe( eslint( { useEslintrc: true, fix: true } ) ) // .eslintrc を参照
+			.pipe( eslint.format() )
+			.pipe( gulpIf( isFixed, gulp.dest( paths[ i ] ) ) )
+			.pipe( eslint.failAfterError() );
+
+	}
+
+	cb();
+
+}
+
+function buildWebpack(){
 
 	let conf = webpackConfig;
 	conf.entry.main = './src/ts/main.ts';
@@ -36,9 +62,9 @@ gulp.task( "webpack",function(){
 		.pipe( gulp.dest( "./public/js/" ) )
 		.unpipe( browserSync.reload() );
 		
-} );
+}
 
-gulp.task( "sass",function( c ){
+function buildSass( c ) {
 	
 	return gulp.src( "./src/scss/style.scss" )
 		.pipe( plumber() )
@@ -48,9 +74,9 @@ gulp.task( "sass",function( c ){
 		.pipe( gulp.dest( "./public/css/" ) )
 		.pipe( browserSync.stream() );
 		
-} );
+}
 
-gulp.task( 'copy', function( c ){
+function copy( c ){
 	
 	gulp.src( ['./src/html/**/*'] ).pipe( gulp.dest( './public/' ) );
 	gulp.src( ['./src/assets/**/*'] ).pipe( gulp.dest( './public/assets/' ) );
@@ -59,9 +85,9 @@ gulp.task( 'copy', function( c ){
 	
 	c();
 	
-} );
+}
 
-gulp.task( 'browser-sync',function(){
+function brSync() {
 
 	browserSync.init( {
 		server: {
@@ -71,46 +97,38 @@ gulp.task( 'browser-sync',function(){
 		open: true
 	} );
 
-} );
+}
 
-gulp.task( 'reload',function(){
+function clean( c ){
 
-	browserSync.reload();
-
-} );
-
-gulp.task( 'clean', function( c ){
-
-	del( [
-
-		'./public/'
-		
-	],{
-
-		force: true,
-
-	} ).then( (paths) => {
+	del( 
+		[ './public/' ],
+		{
+			force: true,
+		} 
+	).then( (paths) => {
 
 		c();
 
 	} );
 
-} );
+}
 
-gulp.task( 'watch', function(){
+function watch(){
 
-	gulp.watch( './src/ts/**/*', gulp.series( 'webpack' ) );
-	gulp.watch( './src/scss/*.scss', gulp.task( 'sass' ) );
-	gulp.watch( './src/html/**/*', gulp.task( 'copy' ) );
-	gulp.watch( './src/assets/**/*', gulp.task( 'copy' ) );
+	gulp.watch( './src/ts/**/*', gulp.series( buildWebpack ) );
+	gulp.watch( './src/scss/*.scss', gulp.task( sass ) );
+	gulp.watch( './src/html/**/*', gulp.task( copy ) );
+	gulp.watch( './src/assets/**/*', gulp.task( copy ) );
 	
-} );
+}
 
-gulp.task( 'default', gulp.series( 
-	'clean',
-	gulp.parallel( 
-		'webpack', 'sass'
-	 ),
-	'copy',
-	gulp.parallel( 'browser-sync', 'watch' ),
- ) );
+exports.default = gulp.series( 
+	clean,
+	lint,
+	gulp.parallel( buildWebpack, buildSass ),
+	copy,
+	gulp.parallel( brSync, watch )
+);
+
+exports.lint = gulp.task( lint );
