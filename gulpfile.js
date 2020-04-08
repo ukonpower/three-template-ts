@@ -117,9 +117,9 @@ function clean( c ){
 function watch(){
 
 	gulp.watch( './src/ts/**/*', gulp.series( buildWebpack ) );
-	gulp.watch( './src/scss/*.scss', gulp.task( sass ) );
-	gulp.watch( './src/html/**/*', gulp.task( copy ) );
-	gulp.watch( './src/assets/**/*', gulp.task( copy ) );
+	gulp.watch( './src/scss/*.scss', gulp.series( sass ) );
+	gulp.watch( './src/html/**/*', gulp.series( copy ) );
+	gulp.watch( './src/assets/**/*', gulp.series( copy ) );
 	
 }
 
