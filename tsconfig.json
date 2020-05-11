@@ -10,7 +10,7 @@
     ],
     "typeRoots": ["node_modules/@types"],
     "rootDir": "./src/ts",
-    "outDir": "./public",
+    "outDir": "./public"
   },
   "include": ["./src/"]
 }
