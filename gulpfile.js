@@ -68,8 +68,8 @@ function buildSass( c ) {
 	
 	return gulp.src( "./src/scss/style.scss" )
 		.pipe( plumber() )
-		.pipe( autoprefixer() )
 		.pipe( sass() )
+		.pipe( autoprefixer([ 'last 2 versions'] ) )
 		.pipe( cssmin() )
 		.pipe( gulp.dest( "./public/css/" ) )
 		.pipe( browserSync.stream() );
