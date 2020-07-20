@@ -125,7 +125,6 @@ function watch(){
 
 exports.default = gulp.series( 
 	clean,
-	lint,
 	gulp.parallel( buildWebpack, buildSass ),
 	copy,
 	gulp.parallel( brSync, watch )
