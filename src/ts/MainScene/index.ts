@@ -3,11 +3,13 @@ import * as THREE from 'three';
 import { GlobalManager } from './GlobalManager';
 import { World } from './World';
 
+import testVert from './shaders/test.vs';
+import testFrag from './shaders/test.fs';
+
 export class MainScene extends ORE.BaseScene {
 
 	private commonUniforms: ORE.Uniforms;
 
-	private box: THREE.Mesh;
 	private gManager: GlobalManager;
 	private world: World;
 
@@ -45,21 +47,21 @@ export class MainScene extends ORE.BaseScene {
 
 		this.world = new World( this.scene, this.commonUniforms );
 
-		this.camera.position.set( 0, 1.5, 3 );
+		this.camera.position.set( 2, 1, 2 );
+		this.camera.fov = 45;
 		this.camera.lookAt( 0, 0, 0 );
+		this.camera.updateProjectionMatrix();
 
-		this.box = new THREE.Mesh( new THREE.BoxBufferGeometry(), new THREE.MeshNormalMaterial() );
-		this.scene.add( this.box );
+		let box = new THREE.Mesh( new THREE.BoxBufferGeometry(), new THREE.MeshStandardMaterial() );
+		this.scene.add( box );
+
+		let light = new THREE.DirectionalLight();
+		light.position.set( 1, 2, 1 );
+		this.scene.add( light );
 
 	}
 
 	public animate( deltaTime: number ) {
-
-		if ( this.gManager.assetManager.isLoaded ) {
-
-			this.box.rotateY( 0.01 );
-
-		}
 
 		this.renderer.render( this.scene, this.camera );
 

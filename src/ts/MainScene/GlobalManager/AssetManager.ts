@@ -8,8 +8,15 @@ declare interface TextureInfo {
 	path: string;
 	name: string;
 	param?: {
-		wrapT?: THREE.Wrapping,
+		mapping?: THREE.Mapping,
 		wrapS?: THREE.Wrapping,
+		wrapT?: THREE.Wrapping,
+		magFilter?: THREE.TextureFilter,
+		minFilter?: THREE.TextureFilter,
+		format?: THREE.PixelFormat,
+		type?: THREE.TextureDataType,
+		anisotropy?: number,
+		encoding?: THREE.TextureEncoding
 	}
 }
 
@@ -25,7 +32,7 @@ export class AssetManager extends ORE.EventDispatcher {
 	public mustAssetsLoaded: boolean = false;
 	public subAssetsLoaded: boolean = false;
 
-	private gltfPath: string;
+	private gltfPath: string = '';
 	private preLoadTexturesInfo: TextureInfo[];
 	private mustLoadTexturesInfo: TextureInfo[];
 	private subLoadTexturesInfo: TextureInfo[];
@@ -45,11 +52,13 @@ export class AssetManager extends ORE.EventDispatcher {
 
 		window.assetManager = this;
 
-		this.gltfPath = '';
+		// this.gltfPath = this.basePath + '/scene/scene.glb';
 
 		this.preLoadTexturesInfo = [];
 
-		this.mustLoadTexturesInfo = [];
+		this.mustLoadTexturesInfo = [
+			// { path: this.basePath + '/scene/img/tex.jpg', name: 'tex', param: { wrapS: THREE.ClampToEdgeWrapping, wrapT: THREE.ClampToEdgeWrapping } },
+		];
 
 		this.subLoadTexturesInfo = [];
 
@@ -64,7 +73,7 @@ export class AssetManager extends ORE.EventDispatcher {
 
 				this.preAssetsLoaded = true;
 
-				this.dispatchEvent( new Event( 'preAssetsLoaded' ) );
+				this.dispatchEvent( new CustomEvent( 'preAssetsLoaded' ) );
 
 			}
 		);
@@ -74,7 +83,7 @@ export class AssetManager extends ORE.EventDispatcher {
 
 				this.mustAssetsLoaded = true;
 
-				this.dispatchEvent( new Event( 'mustAssetsLoaded' ) );
+				this.dispatchEvent( new CustomEvent( 'mustAssetsLoaded' ) );
 
 			},
 			( url: string, loadedNum, totalNum ) => {
@@ -87,7 +96,7 @@ export class AssetManager extends ORE.EventDispatcher {
 
 				this.subAssetsLoaded = true;
 
-				this.dispatchEvent( new Event( 'subAssetsLoaded' ) );
+				this.dispatchEvent( new CustomEvent( 'subAssetsLoaded' ) );
 
 			}
 		);
@@ -119,9 +128,11 @@ export class AssetManager extends ORE.EventDispatcher {
 		} else {
 
 			this.preAssetsLoaded = true;
-			this.dispatchEvent( new Event( 'preAssetsLoaded' ) );
+
+			this.dispatchEvent( new CustomEvent( 'preAssetsLoaded' ) );
 
 		}
+
 
 	}
 
@@ -146,7 +157,8 @@ export class AssetManager extends ORE.EventDispatcher {
 		} else {
 
 			this.mustAssetsLoaded = true;
-			this.dispatchEvent( new Event( 'mustAssetsLoaded' ) );
+
+			this.dispatchEvent( new CustomEvent( 'mustAssetsLoaded' ) );
 
 		}
 
@@ -163,7 +175,8 @@ export class AssetManager extends ORE.EventDispatcher {
 		} else {
 
 			this.subAssetsLoaded = true;
-			this.dispatchEvent( new Event( 'subAssetsLoaded' ) );
+
+			this.dispatchEvent( new CustomEvent( 'subAssetsLoaded' ) );
 
 		}
 
@@ -178,7 +191,7 @@ export class AssetManager extends ORE.EventDispatcher {
 			this.textures[ info.name ] = { value: null };
 
 			let loader = new THREE.TextureLoader( manager );
-			// loader.crossOrigin = 'use-credentials';
+			loader.crossOrigin = 'use-credentials';
 
 			loader.load( info.path, ( tex ) => {
 

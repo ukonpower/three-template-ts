@@ -4,13 +4,11 @@ import * as ORE from 'ore-three-ts';
 import basicVert from './shaders/basic.vs';
 import texFrag from './shaders/tex.fs';
 
-import { SPRayoutController } from './SPRayoutController';
-
 export class World {
 
 	private commonUniforms: ORE.Uniforms;
 	private scene: THREE.Scene;
-	private spRayoutContorllers: SPRayoutController[] = [];
+	private layoutController: ORE.LayoutController[] = [];
 
 	constructor( scene: THREE.Scene, commonUniforms: ORE.Uniforms ) {
 
@@ -28,9 +26,9 @@ export class World {
 
 	public update( spWeight: number ) {
 
-		for ( let i = 0; i < this.spRayoutContorllers.length; i ++ ) {
+		for ( let i = 0; i < this.layoutController.length; i ++ ) {
 
-			this.spRayoutContorllers[ i ].updateTransform( spWeight );
+			this.layoutController[ i ].updateTransform( spWeight );
 
 		}
 
