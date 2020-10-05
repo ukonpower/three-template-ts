@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-import { Object3D } from 'three';
-
 export declare interface TouchObjects{
 	objs: THREE.Intersection[];
 	elms: HTMLElement;
@@ -23,7 +21,9 @@ declare interface ElementInfo {
 
 export class EasyRaycaster {
 
-	public enabled: boolean = true;
+	public enableMeshRaycaster: boolean = true;
+	public enableElementRaycaster: boolean = true;
+
 	private raycaster: THREE.Raycaster;
 	private hoverElm: HTMLElement;
 
@@ -37,8 +37,6 @@ export class EasyRaycaster {
 
 	private clickEvents: ClickEventInfo[] = [];
 	private hoverEvents: HoverEventInfo[] = [];
-
-	public touchableObjs: THREE.Mesh[] = [];
 
 	public onChangeHitObject: ( object: THREE.Object3D | HTMLElement ) => void;
 	public onTouchObject: ( object: THREE.Object3D ) => void;
@@ -66,27 +64,35 @@ export class EasyRaycaster {
 
 		this.raycaster.setFromCamera( m, camera );
 
-		return this.raycaster.intersectObjects( objs );
+		let intersection = this.raycaster.intersectObjects( objs );
+
+		for ( let i = 0; i < intersection.length; i ++ ) {
+
+			if ( intersection[ i ].object.visible ) return intersection[ i ].object;
+
+		}
+
+		return null;
 
 	}
 
 	public checkHitObject( cursorPos: THREE.Vector2, camera: THREE.Camera, objects: THREE.Object3D[] ) {
 
-		if ( ! this.enabled ) return null;
+		if ( ! this.enableMeshRaycaster ) return null;
 
 		let hitObj = this.getHitObject( cursorPos, camera, objects );
 
-		if ( hitObj.length > 0 ) {
+		if ( hitObj ) {
 
-			if ( this.hoverMemObj != hitObj[ 0 ].object ) {
+			if ( this.hoverMemObj != hitObj ) {
 
 				for ( let i = 0; i < this.hoverEvents.length; i ++ ) {
 
 					let e = this.hoverEvents[ i ];
 
-					if ( hitObj[ 0 ].object.name == e.objName ) {
+					if ( hitObj.name == e.objName ) {
 
-						e.event( true, hitObj[ 0 ].object );
+						e.event( true, hitObj );
 
 					}
 
@@ -94,13 +100,13 @@ export class EasyRaycaster {
 
 				if ( this.onChangeHitObject ) {
 
-					this.onChangeHitObject( hitObj[ 0 ].object );
+					this.onChangeHitObject( hitObj );
 
 				}
 
 			}
 
-			this.hoverMemObj = hitObj[ 0 ].object;
+			this.hoverMemObj = hitObj;
 
 			return hitObj;
 
@@ -144,7 +150,7 @@ export class EasyRaycaster {
 
 	public addElements( elements: any ) {
 
-		if ( ! elements ) return null;
+		if ( ! elements ) return;
 
 		if ( elements.length === undefined ) {
 
@@ -218,15 +224,9 @@ export class EasyRaycaster {
 
 	public touchStart( normalizePos: THREE.Vector2, camera: THREE.Camera, objects: THREE.Object3D[] ) {
 
-		if ( ! this.enabled ) return null;
+		if ( ! this.enableMeshRaycaster ) return null;
 
-		let intersection = this.getHitObject( normalizePos, camera, objects );
-
-		if ( intersection.length > 0 ) {
-
-			this.holdObj = intersection[ 0 ].object;
-
-		}
+		this.holdObj = this.getHitObject( normalizePos, camera, objects );
 
 		this.touchStartPos.copy( normalizePos );
 		this.touchStartTime = new Date();
@@ -235,13 +235,13 @@ export class EasyRaycaster {
 
 	public touchEnd( normalizePos: THREE.Vector2, camera: THREE.Camera, objects: THREE.Object3D[] ) {
 
-		if ( ! this.enabled ) return null;
+		if ( ! this.enableMeshRaycaster ) return null;
 
 		if ( this.holdObj ) {
 
-			let intersection = this.getHitObject( normalizePos, camera, objects );
+			let object = this.getHitObject( normalizePos, camera, objects );
 
-			if ( intersection.length > 0 && intersection[ 0 ].object.name == this.holdObj.name ) {
+			if ( object && object.name == this.holdObj.name ) {
 
 				if ( new Date().getTime() - this.touchStartTime.getTime() > 200 ) return;
 
@@ -275,7 +275,7 @@ export class EasyRaycaster {
 
 	private onMouseOver( elm: HTMLElement, e: MouseEvent ) {
 
-		if ( e.target != elm ) return;
+		if ( e.target != elm || this.enableElementRaycaster ) return;
 
 		this.hoverElm = e.target as HTMLElement;
 
