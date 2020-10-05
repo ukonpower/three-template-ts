@@ -38,6 +38,8 @@ export class MainScene extends ORE.BaseScene {
 
 				this.initScene();
 
+				window.dispatchEvent( new Event( 'resize' ) );
+
 			}
 		} );
 
@@ -63,6 +65,8 @@ export class MainScene extends ORE.BaseScene {
 
 	public animate( deltaTime: number ) {
 
+		if ( ! window.assetManager.isLoaded ) return;
+
 		this.renderer.render( this.scene, this.camera );
 
 	}
@@ -70,6 +74,11 @@ export class MainScene extends ORE.BaseScene {
 	public onResize( args: ORE.ResizeArgs ) {
 
 		super.onResize( args );
+
+		if ( ! window.assetManager.isLoaded ) return;
+
+		this.world.update( args.portraitWeight );
+
 
 	}
 
