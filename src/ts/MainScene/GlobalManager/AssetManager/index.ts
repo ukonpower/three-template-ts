@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import * as ORE from 'ore-three-ts';
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { VideoTextureCreator } from './VideoTexture';
+import { VideoTextureCreator } from './VideoTextureCreator';
 
 declare interface TextureParam {
 	mapping?: THREE.Mapping;
