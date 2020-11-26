@@ -60,7 +60,6 @@ function buildWebpack(){
 			this.emit( 'end' );
 		} )
 		.pipe( gulp.dest( "./public/js/" ) )
-		.unpipe( browserSync.reload() );
 		
 }
 
@@ -80,8 +79,6 @@ function copy( c ){
 	
 	gulp.src( ['./src/html/**/*'] ).pipe( gulp.dest( './public/' ) );
 	gulp.src( ['./src/assets/**/*'] ).pipe( gulp.dest( './public/assets/' ) );
-
-	browserSync.reload();
 	
 	c();
 	
@@ -114,12 +111,20 @@ function clean( c ){
 
 }
 
+function reload( cb ) {
+
+	browserSync.reload();
+
+	cb();
+	
+}
+
 function watch(){
 
-	gulp.watch( './src/ts/**/*', gulp.series( buildWebpack ) );
+	gulp.watch( './src/ts/**/*', gulp.series( buildWebpack, reload ) );
 	gulp.watch( './src/scss/*.scss', gulp.series( buildSass ) );
-	gulp.watch( './src/html/**/*', gulp.series( copy ) );
-	gulp.watch( './src/assets/**/*', gulp.series( copy ) );
+	gulp.watch( './src/html/**/*', gulp.series( copy, reload ) );
+	gulp.watch( './src/assets/**/*', gulp.series( copy, reload ) );
 	
 }
 

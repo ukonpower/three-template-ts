@@ -37,7 +37,7 @@
     "webpack": "^4.44.2"
   },
   "dependencies": {
-    "ore-three-ts": "^1.0.4",
-    "three": "^0.121.1"
+    "ore-three-ts": "^2.0.0-dev4",
+    "three": "^0.123.0"
   }
 }

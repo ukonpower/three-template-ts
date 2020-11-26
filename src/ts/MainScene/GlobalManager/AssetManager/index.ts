@@ -26,7 +26,7 @@ declare interface TextureInfo {
 
 export class AssetManager extends ORE.EventDispatcher {
 
-	private basePath = './assets/scene';
+	private basePath = './assets/scene/';
 
 	public preLoadingManager: THREE.LoadingManager;
 	public mustLoadingManager: THREE.LoadingManager;
@@ -44,9 +44,6 @@ export class AssetManager extends ORE.EventDispatcher {
 	public gltfScene: THREE.Group;
 	public textures: ORE.Uniforms = {};
 
-	private videoTexture1: VideoTextureCreator;
-	private videoTexture2: VideoTextureCreator;
-
 	public get isLoaded() {
 
 		return this.mustAssetsLoaded;
@@ -59,7 +56,7 @@ export class AssetManager extends ORE.EventDispatcher {
 
 		window.assetManager = this;
 
-		this.gltfPath = '';
+		this.gltfPath = this.basePath + 'scene.glb';
 
 		this.preLoadTexturesInfo = [];
 

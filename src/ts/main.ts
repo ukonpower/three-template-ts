@@ -39,14 +39,11 @@ class APP {
 
 		this.canvas = document.querySelector( "#canvas" );
 
-		this.controller = new ORE.Controller( {
-
-			canvas: this.canvas,
-			retina: true,
-
+		this.controller = new ORE.Controller();
+		this.controller.addLayer( new MainScene(), {
+			 name: 'Main',
+			 canvas: this.canvas
 		} );
-
-		this.controller.bindScene( new MainScene() );
 
 	}
 

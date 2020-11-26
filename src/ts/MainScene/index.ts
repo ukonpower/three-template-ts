@@ -1,40 +1,30 @@
 import * as ORE from 'ore-three-ts';
 import * as THREE from 'three';
 import { GlobalManager } from './GlobalManager';
-import { World } from './World';
-
-import testVert from './shaders/test.vs';
-import testFrag from './shaders/test.fs';
-
-export class MainScene extends ORE.BaseScene {
-
-	private commonUniforms: ORE.Uniforms;
+import { RenderPipeline } from './RenderPipeline';
+import { CameraController } from './CameraController';
+export class MainScene extends ORE.BaseLayer {
 
 	private gManager: GlobalManager;
-	private world: World;
+	private renderPipeline: RenderPipeline;
+	private cameraController: CameraController;
 
 	constructor() {
 
 		super();
 
-		this.name = "MainScene";
-
-		this.commonUniforms = {
-			time: {
-				value: 0
-			}
-		};
+		this.commonUniforms = ORE.UniformsLib.CopyUniforms( this.commonUniforms, {} );
 
 	}
 
-	onBind( gProps: ORE.GlobalProperties ) {
+	onBind( info: ORE.LayerInfo ) {
 
-		super.onBind( gProps );
-
-		this.renderer = this.gProps.renderer;
+		super.onBind( info );
 
 		this.gManager = new GlobalManager( {
 			onMustAssetsLoaded: () => {
+
+				this.scene.add( window.assetManager.gltfScene );
 
 				this.initScene();
 
@@ -47,17 +37,12 @@ export class MainScene extends ORE.BaseScene {
 
 	private initScene() {
 
-		this.world = new World( this.scene, this.commonUniforms );
+		this.renderPipeline = new RenderPipeline( this.renderer, 0.5, 3.0, this.commonUniforms );
 
-		this.camera.position.set( 2, 1, 2 );
-		this.camera.fov = 45;
-		this.camera.lookAt( 0, 0, 0 );
-		this.camera.updateProjectionMatrix();
-
-		let box = new THREE.Mesh( new THREE.BoxBufferGeometry(), new THREE.MeshStandardMaterial() );
-		this.scene.add( box );
+		this.cameraController = new CameraController( this.camera, this.scene.getObjectByName( 'CameraData' ) );
 
 		let light = new THREE.DirectionalLight();
+		light.intensity = 0.8;
 		light.position.set( 1, 2, 1 );
 		this.scene.add( light );
 
@@ -67,18 +52,27 @@ export class MainScene extends ORE.BaseScene {
 
 		if ( ! window.assetManager.isLoaded ) return;
 
-		this.renderer.render( this.scene, this.camera );
+		this.cameraController.update( deltaTime );
+
+		this.renderPipeline.render( this.scene, this.camera );
 
 	}
 
-	public onResize( args: ORE.ResizeArgs ) {
+	public onResize() {
 
-		super.onResize( args );
+		super.onResize();
 
 		if ( ! window.assetManager.isLoaded ) return;
 
-		this.world.update( args.portraitWeight );
+		this.renderPipeline.resize( this.info.size.canvasPixelSize );
 
+	}
+
+	public onHover( args: ORE.TouchEventArgs ) {
+
+		if ( ! window.assetManager.isLoaded ) return;
+
+		this.cameraController.updateCursor( args.normalizedPosition );
 
 	}
 
