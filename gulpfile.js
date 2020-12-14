@@ -1,3 +1,5 @@
+const fancyLog = require('fancy-log');
+const supportsColor = require( 'supports-color' );
 const gulp = require( 'gulp' );
 const gulpIf = require( 'gulp-if' );
 const webpackStream = require( 'webpack-stream' );
@@ -28,7 +30,7 @@ function isFixed( file ) {
 
 function lint( cb ) {
 
-	let paths = [ './src/', './examples/' ];
+	let paths = [ './src/' ];
 
 	for ( let i = 0; i < paths.length; i ++ ) {
 
@@ -44,7 +46,7 @@ function lint( cb ) {
 
 }
 
-function buildWebpack(){
+function buildWebpack( cb ){
 
 	let conf = webpackConfig;
 	conf.entry.main = './src/ts/main.ts';
@@ -56,11 +58,44 @@ function buildWebpack(){
 
 	}
 
-	return webpackStream( conf, webpack ).on( 'error', function ( e ) {
-			this.emit( 'end' );
-		} )
-		.pipe( gulp.dest( "./public/js/" ) )
+	webpackStream( conf, webpack, function( err, stats ) {
 		
+		//https://github.com/shama/webpack-stream/blob/master/index.js
+		
+		if (err) {
+			return;
+		}
+
+		stats = stats || {};
+
+		var statusLog = stats.toString({
+			colors: supportsColor.stdout.hasBasic,
+			hash: false,
+			timings: false,
+			chunks: false,
+			chunkModules: false,
+			modules: false,
+			children: true,
+			version: true,
+			cached: false,
+			cachedAssets: false,
+			reasons: false,
+			source: false,
+			errorDetails: false
+		});
+		
+		if (statusLog) {
+			fancyLog(statusLog);
+		}
+
+		reload();
+		
+	})
+		.on( 'error', function() { this.emit( 'end' ) } )
+		.pipe( gulp.dest( "./public/js/" ) )
+
+	cb();
+
 }
 
 function buildSass( c ) {
@@ -111,17 +146,14 @@ function clean( c ){
 
 }
 
-function reload( cb ) {
+function reload( ) {
 
 	browserSync.reload();
-
-	cb();
 	
 }
 
 function watch(){
 
-	gulp.watch( './src/ts/**/*', gulp.series( buildWebpack, reload ) );
 	gulp.watch( './src/scss/*.scss', gulp.series( buildSass ) );
 	gulp.watch( './src/html/**/*', gulp.series( copy, reload ) );
 	gulp.watch( './src/assets/**/*', gulp.series( copy, reload ) );

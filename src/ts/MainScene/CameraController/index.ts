@@ -59,7 +59,7 @@ export class CameraController {
 
 	}
 
-	public resize( aspectInfo: ORE.LayerSize ) {
+	public resize( aspectInfo: ORE.AspectInfo ) {
 
 		this.camera.fov = this.baseCamera.fov + aspectInfo.portraitWeight * 20.0;
 		this.camera.updateProjectionMatrix();

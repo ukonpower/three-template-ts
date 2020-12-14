@@ -1,4 +1,5 @@
 module.exports = {
+	watch: true,
     mode: 'development',
     entry: {
         main: ''
@@ -33,5 +34,14 @@ module.exports = {
     },
     resolve: {
         extensions: [".ts", ".js"]
-    }
+	},
+	cache: {
+		type: 'filesystem',
+		buildDependencies: {
+			config: [__filename]
+		}
+	},
+	optimization: {
+		innerGraph: true
+	}
 };
