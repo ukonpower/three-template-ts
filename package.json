@@ -39,7 +39,7 @@
     "webpack-stream": "^6.1.1"
   },
   "dependencies": {
-    "ore-three-ts": "^2.0.0-dev6",
+    "ore-three-ts": "^2.0.0-dev7",
     "three": "^0.123.0"
   }
 }

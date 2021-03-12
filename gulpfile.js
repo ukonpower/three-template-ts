@@ -146,9 +146,11 @@ function clean( c ){
 
 }
 
-function reload( ) {
+function reload( cb ) {
 
 	browserSync.reload();
+
+	cb && cb();
 	
 }
 
