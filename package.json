@@ -40,6 +40,6 @@
   },
   "dependencies": {
     "ore-three-ts": "^2.0.0-dev7",
-    "three": "^0.123.0"
+    "three": "^0.125.0"
   }
 }
