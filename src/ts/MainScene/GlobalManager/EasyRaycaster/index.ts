@@ -1,74 +1,52 @@
 import * as THREE from 'three';
-export declare interface TouchObjects{
-	objs: THREE.Intersection[];
-	elms: HTMLElement;
-}
+import * as ORE from 'ore-three-ts';
 
-declare interface ClickEventInfo {
-	objName: string;
-	event: Function;
-}
-declare interface HoverEventInfo {
-	objName: string;
-	event: ( hover: boolean, obj: THREE.Object3D | HTMLElement ) => void;
-}
-
-declare interface ElementInfo {
-	element: HTMLElement;
-	mouseOverHandler: any;
-	mouseOutHandler: any;
-}
-
-export class EasyRaycaster {
-
-	public enableMeshRaycaster: boolean = true;
-	public enableElementRaycaster: boolean = true;
+export class EasyRaycaster extends THREE.EventDispatcher {
 
 	private raycaster: THREE.Raycaster;
-	private hoverElm: HTMLElement;
+	public touchableObjects: THREE.Object3D[];
 
-	private touchStartPos: THREE.Vector2 = new THREE.Vector2();
-	private touchStartTime: Date;
+	/*-------------------------------
+		Hover
+	-------------------------------*/
+	private hoverMemObj: THREE.Object3D | HTMLElement | null;
 
-	private elementInfos: ElementInfo[] = [];
-
-	private hoverMemObj: THREE.Object3D;
-	private holdObj: THREE.Object3D;
-
-	private clickEvents: ClickEventInfo[] = [];
-	private hoverEvents: HoverEventInfo[] = [];
-
-	public onChangeHitObject: ( object: THREE.Object3D | HTMLElement ) => void;
-	public onTouchObject: ( object: THREE.Object3D ) => void;
+	/*-------------------------------
+		Click
+	-------------------------------*/
+	private clickStart: number;
+	private touchStartObj: THREE.Object3D | HTMLElement | null;
 
 	constructor() {
 
+		super();
+
 		this.raycaster = new THREE.Raycaster();
+		this.touchableObjects = [];
+		this.hoverMemObj = null;
+		this.touchStartObj = null;
+		this.clickStart = 0;
 
 	}
 
-	public getHitObject( cursorPos: THREE.Vector2, camera: THREE.Camera, objects: THREE.Object3D[] ) {
+	private dispatchMouseEvent( type: 'enter' | 'out' | 'hover' | 'click', name: string, intersection?: THREE.Intersection ) {
 
-		if ( ! objects ) return null;
+		this.dispatchEvent( {
+			type: type + '/' + name,
+			intersection: intersection
+		} );
 
-		let objs = [];
+	}
 
-		for ( let i = 0; i < objects.length; i ++ ) {
+	public getIntersection( cursor: THREE.Vector2, camera: THREE.Camera, objects: THREE.Object3D[] ) {
 
-			const element = objects[ i ];
-			objs.push( element );
+		this.raycaster.setFromCamera( cursor, camera );
 
-		}
-
-		let m = new THREE.Vector2( cursorPos.x, cursorPos.y );
-
-		this.raycaster.setFromCamera( m, camera );
-
-		let intersection = this.raycaster.intersectObjects( objs );
+		let intersection = this.raycaster.intersectObjects( objects );
 
 		for ( let i = 0; i < intersection.length; i ++ ) {
 
-			if ( intersection[ i ].object.visible ) return intersection[ i ].object;
+			if ( intersection[ i ].object.visible ) return intersection[ i ];
 
 		}
 
@@ -76,253 +54,89 @@ export class EasyRaycaster {
 
 	}
 
-	public checkHitObject( cursorPos: THREE.Vector2, camera: THREE.Camera, objects: THREE.Object3D[] ) {
+	public update( cursor: THREE.Vector2, camera: THREE.Camera ) {
 
-		if ( ! this.enableMeshRaycaster ) return null;
+		let intersection = this.getIntersection( cursor, camera, this.touchableObjects );
 
-		let hitObj = this.getHitObject( cursorPos, camera, objects );
+		if ( intersection ) {
 
-		if ( hitObj ) {
+			if ( this.hoverMemObj ) {
 
-			if ( this.hoverMemObj != hitObj ) {
+				if ( 'isObject3D' in this.hoverMemObj ) {
 
-				for ( let i = 0; i < this.hoverEvents.length; i ++ ) {
+					if ( intersection.object.uuid == this.hoverMemObj.uuid ) {
 
-					let e = this.hoverEvents[ i ];
+						this.dispatchMouseEvent( 'hover', intersection.object.name, intersection );
 
-					if ( hitObj.name == e.objName ) {
+					} else {
 
-						e.event( true, hitObj );
+						this.dispatchMouseEvent( 'out', this.hoverMemObj.name );
+						this.dispatchMouseEvent( 'enter', intersection.object.name, intersection );
 
 					}
 
 				}
 
-				if ( this.onChangeHitObject ) {
+			} else {
 
-					this.onChangeHitObject( hitObj );
-
-				}
+				this.dispatchMouseEvent( 'enter', intersection.object.name, intersection );
 
 			}
 
-			this.hoverMemObj = hitObj;
-
-			return hitObj;
+			this.hoverMemObj = intersection.object;
 
 		} else {
 
 			if ( this.hoverMemObj ) {
 
-				for ( let i = 0; i < this.hoverEvents.length; i ++ ) {
+				if ( 'isObject3D' in this.hoverMemObj ) {
 
-					let e = this.hoverEvents[ i ];
-
-					if ( this.hoverMemObj.name == e.objName ) {
-
-						e.event( false, this.hoverMemObj );
-
-					}
-
-				}
-
-				if ( this.onChangeHitObject ) {
-
-					this.onChangeHitObject( null );
+					this.dispatchMouseEvent( 'out', this.hoverMemObj.name );
 
 				}
 
 			}
 
-			this.hoverMemObj = null;
-
 		}
+
+		this.hoverMemObj = intersection && intersection.object || null;
 
 		return [];
 
 	}
 
-	public addElements( elements: NodeListOf<Element> )
+	public touchStart( cursor: THREE.Vector2, camera: THREE.Camera ) {
 
-	public addElements( elements: HTMLElement[] )
+		let intersection = this.getIntersection( cursor, camera, this.touchableObjects );
 
-	public addElements( elements: HTMLElement )
+		if ( intersection ) {
 
-	public addElements( elements: any ) {
-
-		if ( ! elements ) return;
-
-		if ( elements.length === undefined ) {
-
-			elements = [ elements ];
-
-		}
-
-		for ( let i = 0; i < elements.length; i ++ ) {
-
-			let elementInfo: ElementInfo = {
-				mouseOverHandler: this.onMouseOver.bind( this, elements[ i ] ),
-				mouseOutHandler: this.onMouseOut.bind( this, elements[ i ] ),
-				element: elements[ i ]
-			};
-
-			elements[ i ].addEventListener( 'mouseenter', elementInfo.mouseOverHandler, false );
-
-			elements[ i ].addEventListener( 'mouseleave', elementInfo.mouseOutHandler, false );
-
-			elements[ i ].addEventListener( 'click', ( event: Event ) => {
-
-				for ( let j = 0; j < this.clickEvents.length; j ++ ) {
-
-					let e = this.clickEvents[ j ];
-
-					if ( ( event.target as HTMLElement ).classList.contains( e.objName ) ) {
-
-						e.event();
-
-					}
-
-				}
-
-			} );
-
-			this.elementInfos.push( elementInfo );
+			this.clickStart = new Date().getTime();
+			this.touchStartObj = intersection.object;
 
 		}
 
 	}
 
-	public removeAllElements() {
+	public touchEnd( cursor: THREE.Vector2, camera: THREE.Camera ) {
 
-		for ( let i = 0; i < this.elementInfos.length; i ++ ) {
+		let intersection = this.getIntersection( cursor, camera, this.touchableObjects );
 
-			this.elementInfos[ i ].element.removeEventListener( 'mouseover', this.elementInfos[ i ].mouseOverHandler );
+		if ( intersection && this.touchStartObj ) {
 
-			this.elementInfos[ i ].element.removeEventListener( 'mouseout', this.elementInfos[ i ].mouseOverHandler );
+			let diff = new Date().getTime() - this.clickStart;
 
-		}
+			if ( 'isObject3D' in this.touchStartObj ) {
 
-	}
+				if ( intersection.object.uuid == this.touchStartObj.uuid && diff < 300 ) {
 
-	public addClickEvent( objName: string, event: Function ) {
-
-		this.clickEvents.push( {
-			objName: objName,
-			event: event
-		} );
-
-	}
-
-	public addHoverEvent( objName: string, event: ( hover: boolean, obj: THREE.Object3D | HTMLElement ) => void ) {
-
-		this.hoverEvents.push( {
-			objName: objName,
-			event: event
-		} );
-
-	}
-
-	public touchStart( normalizePos: THREE.Vector2, camera: THREE.Camera, objects: THREE.Object3D[] ) {
-
-		if ( ! this.enableMeshRaycaster ) return null;
-
-		this.holdObj = this.getHitObject( normalizePos, camera, objects );
-
-		this.touchStartPos.copy( normalizePos );
-		this.touchStartTime = new Date();
-
-	}
-
-	public touchEnd( normalizePos: THREE.Vector2, camera: THREE.Camera, objects: THREE.Object3D[] ) {
-
-		if ( ! this.enableMeshRaycaster ) return null;
-
-		if ( this.holdObj ) {
-
-			let object = this.getHitObject( normalizePos, camera, objects );
-
-			if ( object && object.name == this.holdObj.name ) {
-
-				if ( new Date().getTime() - this.touchStartTime.getTime() > 200 ) return;
-
-				if ( normalizePos.clone().sub( this.touchStartPos ).length() > 0.1 ) return;
-
-				if ( this.onTouchObject ) {
-
-					this.onTouchObject( this.holdObj );
-
-				}
-
-				for ( let i = 0; i < this.clickEvents.length; i ++ ) {
-
-					let e = this.clickEvents[ i ];
-
-					if ( this.holdObj.name == e.objName ) {
-
-						e.event();
-
-					}
+					this.dispatchMouseEvent( 'click', intersection.object.name, intersection );
 
 				}
 
 			}
 
-			this.holdObj = null;
-
 		}
-
-	}
-
-	private onMouseOver( elm: HTMLElement, e: MouseEvent ) {
-
-		if ( e.target != elm || this.enableElementRaycaster ) return;
-
-		this.hoverElm = e.target as HTMLElement;
-
-		for ( let j = 0; j < this.hoverEvents.length; j ++ ) {
-
-			let e = this.hoverEvents[ j ];
-
-			if ( this.hoverElm.classList.contains( e.objName ) ) {
-
-				e.event( true, this.hoverElm );
-
-			}
-
-		}
-
-		if ( this.onChangeHitObject ) {
-
-			this.onChangeHitObject( this.hoverElm );
-
-		}
-
-	}
-
-	private onMouseOut( elm: HTMLElement, e: MouseEvent ) {
-
-		if ( e.target != elm ) return;
-
-		for ( let j = 0; j < this.hoverEvents.length; j ++ ) {
-
-			let e = this.hoverEvents[ j ];
-
-			if ( elm.classList.contains( e.objName ) ) {
-
-				e.event( false, this.hoverElm );
-
-			}
-
-		}
-
-
-		if ( this.onChangeHitObject ) {
-
-			this.onChangeHitObject( null );
-
-		}
-
-		this.hoverElm = null;
 
 	}
 

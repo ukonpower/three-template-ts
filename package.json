@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@types/three": "^0.126.2",
-    "ore-three-ts": "^2.0.2",
-    "three": "^0.126.1"
+    "ore-three-ts": "^2.0.6",
+    "three": "^0.131.3"
   }
 }

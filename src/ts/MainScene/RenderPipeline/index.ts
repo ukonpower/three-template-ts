@@ -18,45 +18,45 @@ import compositeFrag from './shaders/composite.fs';
 
 export class RenderPipeline {
 
+	private renderer: THREE.WebGLRenderer;
+
+	//parameters
+	private bloomResolutionRatio: number;
+	private bloomRenderCount: number;
+	private brightness: number;
+
+	//uniforms
 	private commonUniforms: ORE.Uniforms;
 	private smaaCommonUni: ORE.Uniforms;
 
-	private renderer: THREE.WebGLRenderer;
-
+	//textures
 	private inputTextures: ORE.Uniforms;
 
-	private bloomResolutionRatio: number;
-	private bloomRenderCount: number;
-
+	//postprocessing
 	private bloomBrightPP: ORE.PostProcessing;
 	private bloomBlurPP: ORE.PostProcessing;
 	private smaaEdgePP: ORE.PostProcessing;
 	private smaaCalcWeighttPP: ORE.PostProcessing;
 	private smaaBlendingPP: ORE.PostProcessing;
-
 	private compositePP: ORE.PostProcessing;
 
 	private renderTargets: {
 		[keys:string]: THREE.WebGLRenderTarget
 	};
 
-	constructor( renderer: THREE.WebGLRenderer, bloomResolutionRatio: number = 0.5, bloomRenderCount: number = 5, parentUniforms?: ORE.Uniforms ) {
+	constructor( renderer: THREE.WebGLRenderer, parentUniforms?: ORE.Uniforms ) {
 
 		this.renderer = renderer;
-		this.bloomResolutionRatio = bloomResolutionRatio;
-		this.bloomRenderCount = bloomRenderCount;
+		this.bloomResolutionRatio = 0.5;
+		this.bloomRenderCount = 5;
+		this.brightness = 0.08;
 
 		this.commonUniforms = ORE.UniformsLib.mergeUniforms( {
 		}, parentUniforms );
 
-		this.initRenderTargets();
-		this.initInputTextures();
-		this.initPostProcessings();
-
-	}
-
-	private initRenderTargets() {
-
+		/*------------------------
+			RenderTargets
+		------------------------*/
 		this.renderTargets = {
 			rt1: new THREE.WebGLRenderTarget( 0, 0, {
 				stencilBuffer: false,
@@ -101,10 +101,9 @@ export class RenderPipeline {
 
 		}
 
-	}
-
-	private initInputTextures() {
-
+		/*------------------------
+			InputTextures
+		------------------------*/
 		this.inputTextures = {
 			areaTex: {
 				value: null
@@ -116,6 +115,10 @@ export class RenderPipeline {
 				value: null
 			}
 		};
+
+		/*------------------------
+			PostProcessing
+		------------------------*/
 
 		let areaImg = new Image();
 		areaImg.src = this.getAreaTexture();
@@ -148,9 +151,6 @@ export class RenderPipeline {
 
 		};
 
-	}
-
-	private initPostProcessings() {
 
 		/*------------------------
 			Bloom
@@ -247,7 +247,7 @@ export class RenderPipeline {
 			fragmentShader: compo,
 			uniforms: ORE.UniformsLib.mergeUniforms( {
 				brightness: {
-					value: 0.08
+					value: this.brightness
 				},
 			}, this.commonUniforms ),
 			defines: {
@@ -257,7 +257,7 @@ export class RenderPipeline {
 
 	}
 
-	public render( scene: THREE.Scene, camera: THREE.Camera ) {
+	public render( scene: THREE.Scene, camera: THREE.Camera, renderTarget?: THREE.WebGLRenderTarget ) {
 
 		/*------------------------
 			Scene
@@ -320,20 +320,16 @@ export class RenderPipeline {
 		------------------------*/
 		let compositeInputRenderTargets = {
 			sceneTex: this.renderTargets.rt2.texture,
-			bloomTexs: null
+			bloomTexs: [] as THREE.Texture[]
 		};
-
-		let bloomTexArray: THREE.Texture[] = [];
 
 		for ( let i = 0; i < this.bloomRenderCount; i ++ ) {
 
-			bloomTexArray.push( this.renderTargets[ 'rtBlur' + i.toString() + '_1' ].texture );
+			compositeInputRenderTargets.bloomTexs.push( this.renderTargets[ 'rtBlur' + i.toString() + '_1' ].texture );
 
 		}
 
-		compositeInputRenderTargets.bloomTexs = bloomTexArray;
-
-		this.compositePP.render( compositeInputRenderTargets, null );
+		this.compositePP.render( compositeInputRenderTargets, renderTarget );
 
 		this.renderer.autoClear = true;
 

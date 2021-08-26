@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "sourceMap": true,
-    "target": "es5",
+    "target": "es6",
     "module": "es2015",
     "moduleResolution": "node",
     "lib": [
@@ -13,4 +13,4 @@
     "outDir": "./public"
   },
   "include": ["./src/"]
-}
+} 

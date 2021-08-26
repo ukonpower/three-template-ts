@@ -3,11 +3,12 @@ import * as THREE from 'three';
 import { GlobalManager } from './GlobalManager';
 import { RenderPipeline } from './RenderPipeline';
 import { CameraController } from './CameraController';
+import { AssetManager } from './GlobalManager/AssetManager';
 export class MainScene extends ORE.BaseLayer {
 
-	private gManager: GlobalManager;
-	private renderPipeline: RenderPipeline;
-	private cameraController: CameraController;
+	private gManager?: GlobalManager;
+	private renderPipeline?: RenderPipeline;
+	private cameraController?: CameraController;
 
 	constructor() {
 
@@ -22,22 +23,35 @@ export class MainScene extends ORE.BaseLayer {
 		super.onBind( info );
 
 		this.gManager = new GlobalManager( {
-			onMustAssetsLoaded: () => {
+			assets: [
+				{ name: 'scene', path: './assets/scene/scene.glb', type: 'gltf' }
+			]
+		} );
 
-				this.scene.add( window.assetManager.gltfScene );
+		this.gManager.assetManager.addEventListener( 'loadMustAssets', ( e ) => {
 
-				this.initScene();
+			let gltf = ( e.target as AssetManager ).getGltf( 'scene' );
 
-				window.dispatchEvent( new Event( 'resize' ) );
+			if ( gltf ) {
+
+				this.scene.add( gltf.scene );
 
 			}
+
+			this.initScene();
+			this.onResize();
+
 		} );
 
 	}
 
 	private initScene() {
 
-		this.renderPipeline = new RenderPipeline( this.renderer, 0.5, 3.0, this.commonUniforms );
+		if ( this.renderer ) {
+
+			this.renderPipeline = new RenderPipeline( this.renderer, this.commonUniforms );
+
+		}
 
 		this.cameraController = new CameraController( this.camera, this.scene.getObjectByName( 'CameraData' ) );
 
@@ -50,11 +64,17 @@ export class MainScene extends ORE.BaseLayer {
 
 	public animate( deltaTime: number ) {
 
-		if ( ! window.assetManager.isLoaded ) return;
+		if ( this.cameraController ) {
 
-		this.cameraController.update( deltaTime );
+			this.cameraController.update( deltaTime );
 
-		this.renderPipeline.render( this.scene, this.camera );
+		}
+
+		if ( this.renderPipeline ) {
+
+			this.renderPipeline.render( this.scene, this.camera );
+
+		}
 
 	}
 
@@ -62,17 +82,21 @@ export class MainScene extends ORE.BaseLayer {
 
 		super.onResize();
 
-		if ( ! window.assetManager.isLoaded ) return;
+		if ( this.renderPipeline ) {
 
-		this.renderPipeline.resize( this.info.size.canvasPixelSize );
+			this.renderPipeline.resize( this.info.size.canvasPixelSize );
+
+		}
 
 	}
 
 	public onHover( args: ORE.TouchEventArgs ) {
 
-		if ( ! window.assetManager.isLoaded ) return;
+		if ( this.cameraController ) {
 
-		this.cameraController.updateCursor( args.normalizedPosition );
+			this.cameraController.updateCursor( args.normalizedPosition );
+
+		}
 
 	}
 

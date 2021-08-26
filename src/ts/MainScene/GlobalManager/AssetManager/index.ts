@@ -1,250 +1,218 @@
+import { timeStamp } from 'console';
 import * as THREE from 'three';
-import * as ORE from 'ore-three-ts';
+import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { VideoTextureLoader } from './VideoTextureLoader';
 
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { VideoTextureCreator } from './VideoTextureCreator';
-
-declare interface TextureParam {
-	mapping?: THREE.Mapping;
-	wrapS?: THREE.Wrapping;
-	wrapT?: THREE.Wrapping;
-	magFilter?: THREE.TextureFilter;
-	minFilter?: THREE.TextureFilter;
-	format?: THREE.PixelFormat;
-	type?: THREE.TextureDataType;
-	anisotropy?: number;
-	encoding?: THREE.TextureEncoding;
+export declare interface AssetManagerTexture {
+	value: any;
+	videoTexLoader?: VideoTextureLoader;
 }
 
-declare interface TextureInfo {
-	path: string;
+export declare interface AssetManagerAssetData {
 	name: string;
-	param?: TextureParam;
-	isVideoTexutre?: boolean;
-	videoSubImgPath?: string;
+	path: string;
+	type: 'gltf' | 'tex' | 'videoTex';
+	subImgPath?: string;
+	timing?: 'pre' | 'must' | 'sub';
+	onLoad?: ( value: any ) => void
 }
+export declare interface AssetManagerParams {
+	assets: AssetManagerAssetData[];
+}
+export class AssetManager extends THREE.EventDispatcher {
 
-export class AssetManager extends ORE.EventDispatcher {
+	private textures: {[key:string]: AssetManagerTexture };
+	private gltfs: {[key:string]: GLTF }
 
-	private basePath = './assets/scene/';
+	private preLoadManager: THREE.LoadingManager;
+	private mustLoadManager: THREE.LoadingManager;
+	private subLoadManager: THREE.LoadingManager;
 
-	public preLoadingManager: THREE.LoadingManager;
-	public mustLoadingManager: THREE.LoadingManager;
-	public subLoadingManager: THREE.LoadingManager;
-
-	public preAssetsLoaded: boolean = false;
-	public mustAssetsLoaded: boolean = false;
-	public subAssetsLoaded: boolean = false;
-
-	private gltfPath: string = '';
-	private preLoadTexturesInfo: TextureInfo[];
-	private mustLoadTexturesInfo: TextureInfo[];
-	private subLoadTexturesInfo: TextureInfo[];
-
-	public gltfScene: THREE.Group;
-	public textures: ORE.Uniforms = {};
-
-	public get isLoaded() {
-
-		return this.mustAssetsLoaded;
-
-	}
-
-	constructor() {
+	constructor( params: AssetManagerParams ) {
 
 		super();
 
-		window.assetManager = this;
+		this.textures = {};
+		this.gltfs = {};
 
-		this.gltfPath = this.basePath + 'scene.glb';
+		const processEvent = ( type: string, loaded: number, total: number ) => {
 
-		this.preLoadTexturesInfo = [];
+			this.dispatchEvent( { type: type, value: loaded / total } );
 
-		this.mustLoadTexturesInfo = [];
+		};
 
-		this.subLoadTexturesInfo = [];
+		this.preLoadManager = new THREE.LoadingManager( undefined, ( url, loaded, total ) => {
 
-		this.initLoadingManager();
-
-	}
-
-	private initLoadingManager( ) {
-
-		this.preLoadingManager = new THREE.LoadingManager(
-			() => {
-
-				this.preAssetsLoaded = true;
-
-				this.dispatchEvent( { type: 'preAssetsLoaded' } );
-
-			}
-		);
-
-		this.mustLoadingManager = new THREE.LoadingManager(
-			() => {
-
-				this.mustAssetsLoaded = true;
-
-				this.dispatchEvent( { type: 'mustAssetsLoaded' } );
-
-			}
-		);
-
-		this.subLoadingManager = new THREE.LoadingManager(
-			() => {
-
-				this.subAssetsLoaded = true;
-
-				this.dispatchEvent( { type: 'subAssetsLoaded' } );
-
-			}
-		);
-
-	}
-
-	public load() {
-
-		this.loadPreAssets(
-			() => {
-
-				this.loadSubAssets();
-
-				this.loadMustAssets();
-
-			}
-		);
-
-	}
-
-	private loadPreAssets( callback?: Function ) {
-
-		callback && this.addEventListener( 'preAssetsLoaded', () => {
-
-			callback();
+			processEvent( 'processPreAssets', loaded, total );
 
 		} );
 
-		if ( this.preLoadTexturesInfo.length > 0 ) {
+		this.mustLoadManager = new THREE.LoadingManager( undefined, ( url, loaded, total ) => {
 
-			this.loadTex( this.preLoadTexturesInfo, this.preLoadingManager );
-
-		} else {
-
-			this.preAssetsLoaded = true;
-
-			this.dispatchEvent( { type: 'preAssetsLoaded' } );
-
-		}
-
-
-	}
-
-	private loadMustAssets( callback?: Function ) {
-
-		callback && this.addEventListener( 'mustAssetsLoaded', () => {
-
-			callback();
+			processEvent( 'processMustAssets', loaded, total );
 
 		} );
 
-		if ( this.mustLoadTexturesInfo.length > 0 || this.gltfPath != '' ) {
+		this.subLoadManager = new THREE.LoadingManager( undefined, ( url, loaded, total ) => {
 
-			this.loadTex( this.mustLoadTexturesInfo, this.mustLoadingManager );
-
-			if ( this.gltfPath != '' ) {
-
-				new GLTFLoader( this.mustLoadingManager ).load( this.gltfPath, ( gltf ) => {
-
-					this.gltfScene = gltf.scene;
-
-				} );
-
-			}
-
-		} else {
-
-			this.mustAssetsLoaded = true;
-
-			this.dispatchEvent( { type: 'mustAssetsLoaded' } );
-
-		}
-
-	}
-
-	private loadSubAssets( callback?: Function ) {
-
-		callback && this.addEventListener( 'subAssetsLoaded', () => {
-
-			callback();
+			processEvent( 'processSubAssets', loaded, total );
 
 		} );
 
-		if ( this.subLoadTexturesInfo.length > 0 ) {
+		params.assets.forEach( item => {
 
-			this.loadTex( this.subLoadTexturesInfo, this.subLoadingManager );
+			if ( item.type == 'tex' || item.type == 'videoTex' ) {
 
-		} else {
-
-			this.subAssetsLoaded = true;
-
-			this.dispatchEvent( { type: 'subAssetsLoaded' } );
-
-		}
-
-	}
-
-	private loadTex( infos: TextureInfo[], manager: THREE.LoadingManager ) {
-
-		for ( let i = 0; i < infos.length; i ++ ) {
-
-			let info = infos[ i ];
-
-			this.textures[ info.name ] = { value: null };
-
-			if ( info.isVideoTexutre ) {
-
-				let creator = new VideoTextureCreator( info.path, info.videoSubImgPath );
-				creator.addEventListener( 'texturecreated', ( e ) => {
-
-					this.applyParam( e.detail.texture, info.param );
-
-					this.textures[ info.name ].value = e.detail.texture;
-
-				} );
-
-			} else {
-
-				let loader = new THREE.TextureLoader( manager );
-				loader.crossOrigin = 'use-credentials';
-
-				loader.load( info.path, ( tex ) => {
-
-					this.applyParam( tex, info.param );
-
-					this.textures[ info.name ].value = tex;
-
-				} );
+				this.textures[ item.name ] = { value: null };
 
 			}
 
+		} );
 
-		}
+		this.init( params );
 
 	}
 
-	private applyParam( tex: THREE.Texture, param?: TextureParam ) {
+	private async init( params: AssetManagerParams ) {
 
-		if ( param ) {
+		await this.load( params.assets.filter( item => item.timing == 'pre' ), this.preLoadManager );
+		this.dispatchEvent( { type: 'loadPreAssets' } );
 
-			let keys = Object.keys( param );
+		await this.load( params.assets.filter( item => item.timing == 'must' || item.timing == undefined ), this.mustLoadManager );
+		this.dispatchEvent( { type: 'loadMustAssets' } );
 
-			for ( let i = 0; i < keys.length; i ++ ) {
+		await this.load( params.assets.filter( item => item.timing == 'sub' ), this.subLoadManager );
+		this.dispatchEvent( { type: 'loadSubAssets' } );
 
-				tex[ keys[ i ] ] = param[ keys[ i ] ];
+	}
+
+	private load( assets: AssetManagerAssetData[], manager: THREE.LoadingManager ) {
+
+		let tex = assets.filter( item => item.type == 'tex' );
+		let videoTex = assets.filter( item => item.type == 'videoTex' );
+		let gltf = assets.filter( item => item.type == 'gltf' );
+
+		/*-------------------------------
+			Load Texture
+		-------------------------------*/
+
+		let texLoader = new THREE.TextureLoader( manager );
+
+		tex.forEach( item => {
+
+			texLoader.load( item.path, ( t ) => {
+
+				this.textures[ item.name ].value = t;
+
+				if ( item.onLoad ) {
+
+					item.onLoad( t );
+
+				}
+
+			} );
+
+		} );
+
+		/*-------------------------------
+			Load Video Texture
+		-------------------------------*/
+
+		videoTex.forEach( item => {
+
+			let loader = new VideoTextureLoader( item.path, item.subImgPath );
+
+			loader.addEventListener( 'load', ( e ) => {
+
+				this.textures[ item.name ].value = e.tex;
+
+				if ( item.onLoad ) {
+
+					item.onLoad( e.tex );
+
+				}
+
+			} );
+
+		} );
+
+		/*-------------------------------
+			Load glTF
+		-------------------------------*/
+
+		let gltfLoader = new GLTFLoader( manager );
+
+		gltf.forEach( item => {
+
+			gltfLoader.load( item.path, ( gltf ) => {
+
+				this.gltfs[ item.name ] = gltf;
+
+				if ( item.onLoad ) {
+
+					item.onLoad( gltf );
+
+				}
+
+			} );
+
+		} );
+
+		/*-------------------------------
+			Loading Finish
+		-------------------------------*/
+
+		let promise = new Promise( ( resolve ) => {
+
+			manager.onLoad = () => {
+
+				resolve( null );
+
+			};
+
+			if ( tex.length == 0 && gltf.length == 0 ) {
+
+				setTimeout( () => {
+
+					manager.onLoad();
+
+				}, 0 );
 
 			}
 
+		} );
+
+		return promise;
+
+	}
+
+	public getTex( name: string ): AssetManagerTexture {
+
+		let texture = this.textures[ name ];
+
+		if ( ! texture ) {
+
+			console.warn( 'texture: ' + name + ' is not exist.' );
+
+			this.textures[ name ] = { value: null };
+
 		}
+
+		return this.textures[ name ];
+
+	}
+
+	public getGltf( name: string ): GLTF | undefined {
+
+		let gltf = this.gltfs[ name ];
+
+		if ( ! gltf ) {
+
+			console.warn( 'gltf: ' + name + ' is not exist.' );
+
+		}
+
+		return gltf;
 
 	}
 

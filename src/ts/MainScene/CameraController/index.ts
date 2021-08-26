@@ -13,19 +13,18 @@ export class CameraController {
 
 	private baseCamera: THREE.PerspectiveCamera;
 
-	constructor( obj: THREE.PerspectiveCamera, data: THREE.Object3D ) {
+	constructor( camera: THREE.PerspectiveCamera, data?: THREE.Object3D ) {
 
-		this.camera = obj;
-		this.cameraBasePos = data.getObjectByName( 'Camera' ).getWorldPosition( new THREE.Vector3() );
-		this.cameraTargetPos = data.getObjectByName( 'CameraTarget' ).getWorldPosition( new THREE.Vector3() );
+		this.camera = camera;
 
-		this.baseCamera = data.getObjectByName( 'Camera' ).children[ 0 ] as THREE.PerspectiveCamera;
+		let cameraModel = data && data.getObjectByName( 'Camera' ) as THREE.PerspectiveCamera;
+		this.cameraBasePos = cameraModel ? cameraModel.getWorldPosition( new THREE.Vector3() ) : new THREE.Vector3( 0, 1, 5 );
 
-		this.init();
+		let cameraTarget = data && data.getObjectByName( 'CameraTarget' );
+		this.cameraTargetPos = cameraTarget ? cameraTarget.getWorldPosition( new THREE.Vector3() ) : new THREE.Vector3( 0, 1, 0 );
 
-	}
-
-	protected init() {
+		let baseCamera = data && data.getObjectByName( 'Camera' );
+		this.baseCamera = baseCamera ? ( baseCamera.children[ 0 ] as THREE.PerspectiveCamera ) : camera.clone() as THREE.PerspectiveCamera;
 
 		this.cursorPos = new THREE.Vector2();
 		this.cursorPosDelay = new THREE.Vector2();
@@ -59,9 +58,9 @@ export class CameraController {
 
 	}
 
-	public resize( aspectInfo: ORE.AspectInfo ) {
+	public resize( layerInfo: ORE.LayerInfo ) {
 
-		this.camera.fov = this.baseCamera.fov + aspectInfo.portraitWeight * 20.0;
+		this.camera.fov = this.baseCamera.fov + layerInfo.size.portraitWeight * 20.0;
 		this.camera.updateProjectionMatrix();
 
 	}
