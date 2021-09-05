@@ -56,7 +56,6 @@ export class MainScene extends ORE.BaseLayer {
 		this.cameraController = new CameraController( this.camera, this.scene.getObjectByName( 'CameraData' ) );
 
 		let light = new THREE.DirectionalLight();
-		light.intensity = 0.8;
 		light.position.set( 1, 2, 1 );
 		this.scene.add( light );
 
