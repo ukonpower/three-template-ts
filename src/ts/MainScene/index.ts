@@ -99,4 +99,16 @@ export class MainScene extends ORE.BaseLayer {
 
 	}
 
+	public onTouchStart( args: ORE.TouchEventArgs ) {
+
+	}
+
+	public onTouchMove( args: ORE.TouchEventArgs ) {
+
+	}
+
+	public onTouchEnd( args: ORE.TouchEventArgs ) {
+
+	}
+
 }
