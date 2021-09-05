@@ -22,11 +22,11 @@ export class MainScene extends ORE.BaseLayer {
 
 		super.onBind( info );
 
-		this.gManager = new GlobalManager( {
-			assets: [
-				{ name: 'scene', path: './assets/scene/scene.glb', type: 'gltf' }
-			]
-		} );
+		this.gManager = new GlobalManager();
+
+		this.gManager.assetManager.load( { assets: [
+			{ name: 'scene', path: './assets/scene/scene.glb', type: 'gltf' }
+		] } );
 
 		this.gManager.assetManager.addEventListener( 'loadMustAssets', ( e ) => {
 

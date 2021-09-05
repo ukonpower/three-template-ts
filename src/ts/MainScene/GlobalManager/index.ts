@@ -11,12 +11,12 @@ export class GlobalManager {
 	public assetManager: AssetManager;
 	public animator: ORE.Animator;
 
-	constructor( assetManagerParams: AssetManagerParams ) {
+	constructor( ) {
 
 		window.gManager = this;
 
 		this.animator = new ORE.Animator();
-		this.assetManager = new AssetManager( assetManagerParams );
+		this.assetManager = new AssetManager();
 		this.eRay = new EasyRaycaster();
 
 	}
