@@ -1,4 +1,3 @@
-import { timeStamp } from 'console';
 import * as THREE from 'three';
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VideoTextureLoader } from './VideoTextureLoader';
@@ -28,34 +27,32 @@ export class AssetManager extends THREE.EventDispatcher {
 	private mustLoadManager: THREE.LoadingManager;
 	private subLoadManager: THREE.LoadingManager;
 
-	constructor( params: AssetManagerParams ) {
+	constructor( ) {
 
 		super();
 
 		this.textures = {};
 		this.gltfs = {};
 
-		const processEvent = ( type: string, loaded: number, total: number ) => {
+	}
 
-			this.dispatchEvent( { type: type, value: loaded / total } );
-
-		};
+	public load( params: AssetManagerParams ) {
 
 		this.preLoadManager = new THREE.LoadingManager( undefined, ( url, loaded, total ) => {
 
-			processEvent( 'processPreAssets', loaded, total );
+			this.processEvent( 'processPreAssets', loaded, total );
 
 		} );
 
 		this.mustLoadManager = new THREE.LoadingManager( undefined, ( url, loaded, total ) => {
 
-			processEvent( 'processMustAssets', loaded, total );
+			this.processEvent( 'processMustAssets', loaded, total );
 
 		} );
 
 		this.subLoadManager = new THREE.LoadingManager( undefined, ( url, loaded, total ) => {
 
-			processEvent( 'processSubAssets', loaded, total );
+			this.processEvent( 'processSubAssets', loaded, total );
 
 		} );
 
@@ -75,18 +72,18 @@ export class AssetManager extends THREE.EventDispatcher {
 
 	private async init( params: AssetManagerParams ) {
 
-		await this.load( params.assets.filter( item => item.timing == 'pre' ), this.preLoadManager );
+		await this.loadAssets( params.assets.filter( item => item.timing == 'pre' ), this.preLoadManager );
 		this.dispatchEvent( { type: 'loadPreAssets' } );
 
-		await this.load( params.assets.filter( item => item.timing == 'must' || item.timing == undefined ), this.mustLoadManager );
+		await this.loadAssets( params.assets.filter( item => item.timing == 'must' || item.timing == undefined ), this.mustLoadManager );
 		this.dispatchEvent( { type: 'loadMustAssets' } );
 
-		await this.load( params.assets.filter( item => item.timing == 'sub' ), this.subLoadManager );
+		await this.loadAssets( params.assets.filter( item => item.timing == 'sub' ), this.subLoadManager );
 		this.dispatchEvent( { type: 'loadSubAssets' } );
 
 	}
 
-	private load( assets: AssetManagerAssetData[], manager: THREE.LoadingManager ) {
+	private loadAssets( assets: AssetManagerAssetData[], manager: THREE.LoadingManager ) {
 
 		let tex = assets.filter( item => item.type == 'tex' );
 		let videoTex = assets.filter( item => item.type == 'videoTex' );
@@ -183,6 +180,12 @@ export class AssetManager extends THREE.EventDispatcher {
 		} );
 
 		return promise;
+
+	}
+
+	private processEvent( type: string, loaded: number, total: number ) {
+
+		this.dispatchEvent( { type: type, value: loaded / total } );
 
 	}
 
