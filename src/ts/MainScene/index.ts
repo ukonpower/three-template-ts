@@ -81,6 +81,12 @@ export class MainScene extends ORE.BaseLayer {
 
 		super.onResize();
 
+		if ( this.cameraController ) {
+
+			this.cameraController.resize( this.info );
+
+		}
+
 		if ( this.renderPipeline ) {
 
 			this.renderPipeline.resize( this.info.size.canvasPixelSize );
