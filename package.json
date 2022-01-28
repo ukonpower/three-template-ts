@@ -29,14 +29,15 @@
     "gulp-eslint": "^6.0.0",
     "gulp-if": "^3.0.0",
     "gulp-plumber": "^1.2.1",
-    "gulp-sass": "^4.1.0",
+    "gulp-sass": "^5.1.0",
     "minimist": "^1.2.5",
     "raw-loader": "^4.0.2",
+    "sass": "^1.49.0",
     "supports-color": "^8.1.1",
     "ts-loader": "^8.1.0",
     "typescript": "^4.2.3",
-    "webpack": "^5.28.0",
-    "webpack-stream": "^6.1.2"
+    "webpack": "^5.67.0",
+    "webpack-stream": "^7.0.0"
   },
   "dependencies": {
     "@types/three": "^0.126.2",

@@ -2,10 +2,8 @@ module.exports = {
 	watch: true,
     mode: 'development',
     entry: {
-        main: ''
     },
     output: {
-        filename: ''
     },
     module: {
         rules: [{

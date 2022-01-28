@@ -8,7 +8,7 @@ const webpackConfig = require( './webpack.config.js' );
 const browserSync = require( 'browser-sync' );
 const autoprefixer = require( 'gulp-autoprefixer' );
 const plumber = require( 'gulp-plumber' );
-const sass = require( 'gulp-sass' );
+const sass = require( 'gulp-sass' )(require("sass"));
 const cssmin = require( 'gulp-cssmin' );
 const del = require( 'del' );
 const eslint = require( 'gulp-eslint' );
@@ -60,9 +60,8 @@ function buildWebpack( cb ){
 
 	webpackStream( conf, webpack, function( err, stats ) {
 		
-		//https://github.com/shama/webpack-stream/blob/master/index.js
-		
 		if (err) {
+			console.log(err);
 			return;
 		}
 
@@ -70,18 +69,6 @@ function buildWebpack( cb ){
 
 		var statusLog = stats.toString({
 			colors: supportsColor.stdout.hasBasic,
-			hash: false,
-			timings: false,
-			chunks: false,
-			chunkModules: false,
-			modules: false,
-			children: true,
-			version: true,
-			cached: false,
-			cachedAssets: false,
-			reasons: false,
-			source: false,
-			errorDetails: false
 		});
 		
 		if (statusLog) {
@@ -89,12 +76,11 @@ function buildWebpack( cb ){
 		}
 
 		reload();
+		cb();
 		
 	})
 		.on( 'error', function() { this.emit( 'end' ) } )
 		.pipe( gulp.dest( "./public/js/" ) )
-
-	cb();
 
 }
 
@@ -156,7 +142,7 @@ function reload( cb ) {
 
 function watch(){
 
-	gulp.watch( './src/scss/*.scss', gulp.series( buildSass ) );
+	gulp.watch( './src/scss/**/*', gulp.series( buildSass ) );
 	gulp.watch( './src/html/**/*', gulp.series( copy, reload ) );
 	gulp.watch( './src/assets/**/*', gulp.series( copy, reload ) );
 	
