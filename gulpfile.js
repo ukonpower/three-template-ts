@@ -1,18 +1,27 @@
-const fancyLog = require('fancy-log');
-const supportsColor = require( 'supports-color' );
+// gulp
 const gulp = require( 'gulp' );
 const gulpIf = require( 'gulp-if' );
+
+// utils
+const browserSync = require( 'browser-sync' );
+const plumber = require( 'gulp-plumber' );
+const del = require( 'del' );
+
+// css
+const sass = require( 'gulp-dart-sass' );
+const cssmin = require( 'gulp-cssmin' );
+const autoprefixer = require( 'gulp-autoprefixer' );
+const minimist = require( 'minimist' );
+
+// eslint
+const eslint = require( 'gulp-eslint' );
+
+// ts
 const webpackStream = require( 'webpack-stream' );
 const webpack = require( 'webpack' );
 const webpackConfig = require( './webpack.config.js' );
-const browserSync = require( 'browser-sync' );
-const autoprefixer = require( 'gulp-autoprefixer' );
-const plumber = require( 'gulp-plumber' );
-const sass = require( 'gulp-sass' )(require("sass"));
-const cssmin = require( 'gulp-cssmin' );
-const del = require( 'del' );
-const eslint = require( 'gulp-eslint' );
-const minimist = require( 'minimist' );
+const fancyLog = require('fancy-log');
+const supportsColor = require( 'supports-color' );
 
 const options = minimist( process.argv.slice( 2 ), {
 
@@ -69,6 +78,18 @@ function buildWebpack( cb ){
 
 		var statusLog = stats.toString({
 			colors: supportsColor.stdout.hasBasic,
+			hash: false,
+			timings: false,
+			chunks: false,
+			chunkModules: false,
+			modules: false,
+			children: true,
+			version: true,
+			cached: false,
+			cachedAssets: false,
+			reasons: false,
+			source: false,
+			errorDetails: false
 		});
 		
 		if (statusLog) {
@@ -80,18 +101,18 @@ function buildWebpack( cb ){
 		
 	})
 		.on( 'error', function() { this.emit( 'end' ) } )
-		.pipe( gulp.dest( "./public/js/" ) )
+		.pipe( gulp.dest( './public/js/' ) )
 
 }
 
 function buildSass( c ) {
 	
-	return gulp.src( "./src/scss/style.scss" )
+	return gulp.src( './src/scss/style.scss' )
 		.pipe( plumber() )
 		.pipe( sass() )
 		.pipe( autoprefixer([ 'last 2 versions'] ) )
 		.pipe( cssmin() )
-		.pipe( gulp.dest( "./public/css/" ) )
+		.pipe( gulp.dest( './public/css/' ) )
 		.pipe( browserSync.stream() );
 		
 }
@@ -109,8 +130,8 @@ function brSync() {
 
 	browserSync.init( {
 		server: {
-			baseDir: "public",
-			index: "index.html"
+			baseDir: 'public',
+			index: 'index.html'
 		},
 		open: true
 	} );
