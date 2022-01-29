@@ -128,7 +128,7 @@ export class RenderPipeline {
 			let tex = new THREE.Texture( areaImg );
 			tex.minFilter = THREE.LinearFilter;
 			tex.generateMipmaps = false;
-			tex.format = THREE.RGBFormat;
+			tex.format = THREE.RGBAFormat;
 			tex.flipY = false;
 			tex.needsUpdate = true;
 

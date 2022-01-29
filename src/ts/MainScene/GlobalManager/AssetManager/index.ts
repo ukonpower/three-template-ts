@@ -34,9 +34,6 @@ export class AssetManager extends THREE.EventDispatcher {
 		this.textures = {};
 		this.gltfs = {};
 
-	}
-
-	public load( params: AssetManagerParams ) {
 
 		this.preLoadManager = new THREE.LoadingManager( undefined, ( url, loaded, total ) => {
 
@@ -56,6 +53,10 @@ export class AssetManager extends THREE.EventDispatcher {
 
 		} );
 
+	}
+
+	public async load( params: AssetManagerParams ) {
+
 		params.assets.forEach( item => {
 
 			if ( item.type == 'tex' || item.type == 'videoTex' ) {
@@ -65,12 +66,6 @@ export class AssetManager extends THREE.EventDispatcher {
 			}
 
 		} );
-
-		this.init( params );
-
-	}
-
-	private async init( params: AssetManagerParams ) {
 
 		await this.loadAssets( params.assets.filter( item => item.timing == 'pre' ), this.preLoadManager );
 		this.dispatchEvent( { type: 'loadPreAssets' } );

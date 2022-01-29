@@ -14,6 +14,7 @@ declare global {
 	}
 }
 
+
 class APP {
 
 	private canvas: HTMLCanvasElement | null;
