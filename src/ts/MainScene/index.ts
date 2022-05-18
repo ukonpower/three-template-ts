@@ -63,6 +63,12 @@ export class MainScene extends ORE.BaseLayer {
 
 	public animate( deltaTime: number ) {
 
+		if( this.gManager ) {
+
+			this.gManager.update( deltaTime );
+			
+		}
+		
 		if ( this.cameraController ) {
 
 			this.cameraController.update( deltaTime );
