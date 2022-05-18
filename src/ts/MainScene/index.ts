@@ -4,11 +4,14 @@ import { GlobalManager } from './GlobalManager';
 import { RenderPipeline } from './RenderPipeline';
 import { CameraController } from './CameraController';
 import { AssetManager } from './GlobalManager/AssetManager';
+import { World } from './World';
 export class MainScene extends ORE.BaseLayer {
 
 	private gManager?: GlobalManager;
 	private renderPipeline?: RenderPipeline;
 	private cameraController?: CameraController;
+
+	private world?: World;
 
 	constructor() {
 
@@ -47,31 +50,47 @@ export class MainScene extends ORE.BaseLayer {
 
 	private initScene() {
 
+		/*-------------------------------
+			RenderPipeline
+		-------------------------------*/
+
 		if ( this.renderer ) {
 
 			this.renderPipeline = new RenderPipeline( this.renderer, this.commonUniforms );
 
 		}
 
+		/*-------------------------------
+			CameraController
+		-------------------------------*/
+
 		this.cameraController = new CameraController( this.camera, this.scene.getObjectByName( 'CameraData' ) );
 
-		let light = new THREE.DirectionalLight();
-		light.position.set( 1, 2, 1 );
-		this.scene.add( light );
+		/*-------------------------------
+			World
+		-------------------------------*/
+
+		this.world = new World( this.scene, this.commonUniforms );
 
 	}
 
 	public animate( deltaTime: number ) {
 
-		if( this.gManager ) {
+		if ( this.gManager ) {
 
 			this.gManager.update( deltaTime );
-			
+
 		}
-		
+
 		if ( this.cameraController ) {
 
 			this.cameraController.update( deltaTime );
+
+		}
+
+		if ( this.world ) {
+
+			this.world.update( deltaTime );
 
 		}
 
@@ -95,7 +114,7 @@ export class MainScene extends ORE.BaseLayer {
 
 		if ( this.renderPipeline ) {
 
-			this.renderPipeline.resize( this.info.size.canvasPixelSize );
+			this.renderPipeline.resize( this.info );
 
 		}
 
