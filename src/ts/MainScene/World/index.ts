@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import * as ORE from 'ore-three-ts';
+import * as ORE from 'ore-three';
 
 export class World extends THREE.Object3D {
 
@@ -22,6 +22,9 @@ export class World extends THREE.Object3D {
 	}
 
 	public update( deltaTime: number ) {
+	}
+
+	public resize( info: ORE.LayerInfo ) {
 	}
 
 	public dispose() {

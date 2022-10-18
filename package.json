@@ -19,6 +19,7 @@
     "@babel/core": "^7.16.12",
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.16.9",
+    "@types/three": "^0.144.0",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
     "browser-sync": "^2.27.7",
@@ -45,8 +46,9 @@
     "webpack-stream": "^7.0.0"
   },
   "dependencies": {
-    "@types/three": "^0.137.0",
-    "ore-three-ts": "^2.1.0",
-    "three": "^0.137.4"
+    "@tweakpane/core": "^1.1.0",
+    "ore-three": "^4.0.0-beta1",
+    "three": "^0.145.0",
+    "tweakpane": "^3.1.0"
   }
 }

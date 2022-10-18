@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import * as ORE from 'ore-three-ts';
+import * as ORE from 'ore-three';
 
 export class VideoTextureLoader extends THREE.EventDispatcher {
 

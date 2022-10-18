@@ -1,4 +1,4 @@
-import * as ORE from 'ore-three-ts';
+import * as ORE from 'ore-three';
 import { MainScene } from './MainScene';
 
 import { GlobalManager } from './MainScene/GlobalManager';
@@ -18,6 +18,7 @@ declare global {
 class APP {
 
 	private canvas: HTMLCanvasElement | null;
+	private scene: MainScene;
 	private controller: ORE.Controller;
 
 	constructor() {
@@ -32,13 +33,16 @@ class APP {
 		/*------------------------
 			init ORE
 		------------------------*/
+
 		this.canvas = document.querySelector( "#canvas" );
 
+		this.scene = new MainScene( {
+			name: 'Main',
+			canvas: this.canvas || undefined
+	   } );
+
 		this.controller = new ORE.Controller();
-		this.controller.addLayer( new MainScene(), {
-			 name: 'Main',
-			 canvas: this.canvas || undefined
-		} );
+		this.controller.addLayer( this.scene );
 
 	}
 

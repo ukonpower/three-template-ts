@@ -1,5 +1,4 @@
-import * as ORE from 'ore-three-ts';
-import * as THREE from 'three';
+import * as ORE from 'ore-three';
 import { GlobalManager } from './GlobalManager';
 import { RenderPipeline } from './RenderPipeline';
 import { CameraController } from './CameraController';
@@ -7,29 +6,29 @@ import { AssetManager } from './GlobalManager/AssetManager';
 import { World } from './World';
 export class MainScene extends ORE.BaseLayer {
 
-	private gManager?: GlobalManager;
-	private renderPipeline?: RenderPipeline;
-	private cameraController?: CameraController;
+	private gManager: GlobalManager;
+	private renderPipeline: RenderPipeline;
 
+	private cameraController?: CameraController;
 	private world?: World;
 
-	constructor() {
+	constructor( param: ORE.LayerParam ) {
 
-		super();
+		super( param );
 
 		this.commonUniforms = ORE.UniformsLib.mergeUniforms( this.commonUniforms, {} );
 
-	}
-
-	onBind( info: ORE.LayerInfo ) {
-
-		super.onBind( info );
+		/*-------------------------------
+			Gmanager
+		-------------------------------*/
 
 		this.gManager = new GlobalManager();
 
-		this.gManager.assetManager.load( { assets: [
-			{ name: 'scene', path: './assets/scene/scene.glb', type: 'gltf' }
-		] } );
+		this.gManager.assetManager.load( {
+			assets: [
+				{ name: 'scene', path: './assets/scene/scene.glb', type: 'gltf' }
+			]
+		} );
 
 		this.gManager.assetManager.addEventListener( 'loadMustAssets', ( e ) => {
 
@@ -46,19 +45,27 @@ export class MainScene extends ORE.BaseLayer {
 
 		} );
 
-	}
-
-	private initScene() {
-
 		/*-------------------------------
 			RenderPipeline
 		-------------------------------*/
 
-		if ( this.renderer ) {
+		this.renderPipeline = new RenderPipeline( this.renderer, this.commonUniforms );
 
-			this.renderPipeline = new RenderPipeline( this.renderer, this.commonUniforms );
+	}
+
+	onUnbind() {
+
+		super.onUnbind();
+
+		if ( this.world ) {
+
+			this.world.dispose();
 
 		}
+
+	}
+
+	private initScene() {
 
 		/*-------------------------------
 			CameraController
@@ -71,6 +78,7 @@ export class MainScene extends ORE.BaseLayer {
 		-------------------------------*/
 
 		this.world = new World( this.scene, this.commonUniforms );
+		this.scene.add( this.world );
 
 	}
 
@@ -94,11 +102,7 @@ export class MainScene extends ORE.BaseLayer {
 
 		}
 
-		if ( this.renderPipeline ) {
-
-			this.renderPipeline.render( this.scene, this.camera );
-
-		}
+		this.renderPipeline.render( this.scene, this.camera );
 
 	}
 
@@ -112,11 +116,13 @@ export class MainScene extends ORE.BaseLayer {
 
 		}
 
-		if ( this.renderPipeline ) {
+		if ( this.world ) {
 
-			this.renderPipeline.resize( this.info );
+			this.world.resize( this.info );
 
 		}
+
+		this.renderPipeline.resize( this.info );
 
 	}
 
@@ -124,22 +130,22 @@ export class MainScene extends ORE.BaseLayer {
 
 		if ( this.cameraController ) {
 
-			this.cameraController.updateCursor( args.normalizedPosition );
+			this.cameraController.updateCursor( args.screenPosition );
 
 		}
 
 	}
 
 	public onTouchStart( args: ORE.TouchEventArgs ) {
-
 	}
 
 	public onTouchMove( args: ORE.TouchEventArgs ) {
-
 	}
 
 	public onTouchEnd( args: ORE.TouchEventArgs ) {
+	}
 
+	public onWheelOptimized( event: WheelEvent ) {
 	}
 
 }
